@@ -1,7 +1,8 @@
 const predictClassification = require('../services/inferenceService');
 const crypto = require('crypto');
 const storeData = require('../services/storeData');
-const InputError = require('../exceptions/InputError'); 
+const InputError = require('../exceptions/InputError');
+const getAllData = require('../services/getAllData');
 
 async function postPredictHandler(request, h) {
     try {
@@ -9,14 +10,15 @@ async function postPredictHandler(request, h) {
         const { model } = request.server.app;
 
         const { label, suggestion } = await predictClassification(model, image);
+
         const id = crypto.randomUUID();
         const createdAt = new Date().toISOString();
 
         const data = {
-            "id" : id,
-            "result" : label,
-            "suggestion" : suggestion,
-            "createdAt" : createdAt
+            id,
+            result: label,
+            suggestion,
+            createdAt
         };
 
         await storeData(id, data);
@@ -29,8 +31,36 @@ async function postPredictHandler(request, h) {
         response.code(201);
         return response;
     } catch (error) {
-        throw new InputError('Terjadi kesalahan dalam melakukan prediksi', 400);
+        throw new InputError('Terjadi kesalahan dalam melakukan prediksi');
     }
 }
 
-module.exports = postPredictHandler;
+async function postPredictHistoriesHandler(request, h) {
+    try {
+        const allData = await getAllData();
+
+        const formatAllData = allData.map(doc => ({
+            id: doc.id,
+            history: {
+                result: doc.result,
+                createdAt: doc.createdAt,
+                suggestion: doc.suggestion,
+                id: doc.id
+            }
+        }));
+
+        const response = h.response({
+            status: 'success',
+            data: formatAllData
+        });
+        response.code(200);
+        return response;
+    } catch (error) {
+        throw new InputError('Terjadi kesalahan dalam mengambil riwayat prediksi');
+    }
+}
+
+module.exports = {
+    postPredictHandler,
+    postPredictHistoriesHandler
+};
