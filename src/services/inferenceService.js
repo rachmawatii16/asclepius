@@ -8,14 +8,11 @@ async function predictClassification(model, image) {
             .resizeNearestNeighbor([224, 224])
             .expandDims()
             .toFloat()
- 
-        // const classes = ['Melanocytic nevus', 'Squamous cell carcinoma', 'Vascular lesion'];
- 
+  
         const prediction = model.predict(tensor);
         const score = await prediction.data();
         const confidenceScore = Math.max(...score) * 100;
  
-        // const classResult = tf.argMax(prediction, 1).dataSync()[0];
         const label = confidenceScore <= 50 ? 'Non-cancer' : 'Cancer';
  
         let suggestion;
