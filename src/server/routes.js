@@ -1,8 +1,4 @@
-const postPredictHandler = require('./handler');
-
-// const generateMaxBytes = (megaBytesSize) => {
-//   return megaBytesSize * 1024 * 1024;
-// };
+const { postPredictHandler, postPredictHistoriesHandler } = require('./handler');
 
 const routes = [
   {
@@ -14,9 +10,14 @@ const routes = [
         allow: 'multipart/form-data', 
         multipart: true, 
         maxBytes:1000000 
-      },
-    },
+      }
+    }
   },
-];
+  {
+    path: '/predict/histories',
+    method: 'GET',
+    handler: postPredictHistoriesHandler,
+  }
+]
 
 module.exports = routes;
